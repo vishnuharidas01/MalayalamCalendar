@@ -5,114 +5,99 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useState, createContext, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
 
+import WeekRowView from './src/Views/WeekRowView/index';
+import { Kollavarsham } from 'kollavarsham';
+import { 
+  addMonthsToDate, 
+  formattedDate, 
+  substractMonthsFromDate,
+ } from './src/Models/CalendarFunctions'
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+getCurrentLocation
+} from './src/Models/LocationMethods'
+/**for storing settings */
+interface CurrentSettingContextType {
+  system: 'SuryaSiddhanta',
+    latitude: number,
+    longitude: number
 }
+const CurrentSettingContext = createContext<CurrentSettingContextType | null>(null);
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentSetting, setCurrentSetting] = useState<CurrentSettingContextType>({
+    system: 'SuryaSiddhanta',
+    latitude: 10,
+    longitude: 76.2
+  });
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const [loaded, setLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    // This code runs when the component mounts
+    setLoaded(true);
+    let location =  getCurrentLocation().then(location => {
+      if (location != undefined) {
+     currentSetting.latitude = location.latitude;
+     currentSetting.longitude = location.longitude;
+ }
+ })
+    // Optionally, you can return a cleanup function to run when the component unmounts
+    return () => {
+      // Cleanup logic
+    };
+  }, []); // Empty dependency array to run the effect only once on component mount
+
+  /** function to change months in calendar view */
+  const goToNextMonth = () => {
+    setCurrentMonth(addMonthsToDate(currentMonth, 1));
+  };
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth(substractMonthsFromDate(currentMonth, 1));
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+    <CurrentSettingContext.Provider value={currentSetting}>
+    <SafeAreaView style={{flex: 1}}>
+       <TouchableOpacity onPress={goToPreviousMonth}>
+        <Text>Previous Month</Text>
+      </TouchableOpacity>
+       <Text style= {styles.formattedDate}>{formattedDate(currentMonth)}</Text> 
+      <TouchableOpacity onPress={goToNextMonth}>
+        <Text>Next Month</Text>
+      </TouchableOpacity>
+      <ScrollView>
+      <WeekRowView date={currentMonth} latitude={currentSetting.latitude} longitude={currentSetting.longitude}/>
       </ScrollView>
+     
     </SafeAreaView>
+    </CurrentSettingContext.Provider>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+    formattedDate: {
+      textAlign: 'center',
+      fontSize: 28,
+      fontWeight: 'bold'
+    }
 });
 
 export default App;
+function onComponentLoad() {
+  throw new Error('Function not implemented.');
+}
+
