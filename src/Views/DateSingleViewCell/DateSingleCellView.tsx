@@ -7,7 +7,12 @@ import styles from './styles';
 import { KollavarshamDate } from 'kollavarsham';
 import { isDayOfSameMonth } from '../../Models/CalendarFunctions';
 
-const DateSingleCellView: React.FC<{ mlDate: KollavarshamDate, currentMonth: Date }> = ({ mlDate, currentMonth }) => {
+interface DateSingleCellViewProps {
+  mlDate: KollavarshamDate;
+  currentMonth: Date;
+}
+
+const DateSingleCellView: React.FC<DateSingleCellViewProps> = ({ mlDate, currentMonth }) => {
   const isCurrentMonth = isDayOfSameMonth(mlDate.gregorianDate, currentMonth);
   const [isCellClicked, setIsCellClicked] = useState(false)
   const handlePress = useCallback(() => {

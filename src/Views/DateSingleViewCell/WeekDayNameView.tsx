@@ -5,7 +5,10 @@ import {
 } from 'react-native';
 import styles from './styles';
 
-const WeekDayNamesView: React.FC<({dayName: string})> = ({dayName}) => {
+interface WeekDayNameProps {
+  dayName: string
+}
+const WeekDayNamesView: React.FC<WeekDayNameProps> = ({dayName}) => {
     return (
       <View style={[styles.dayCell, styles.dayCellNormal]}>
         <Text style={styles.dayNameCell}>{dayName}</Text>
@@ -13,4 +16,4 @@ const WeekDayNamesView: React.FC<({dayName: string})> = ({dayName}) => {
     );
   }
 
-  export default WeekDayNamesView;
+  export default React.memo (WeekDayNamesView);
